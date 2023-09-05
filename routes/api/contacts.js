@@ -15,6 +15,12 @@ const contactAddSchema = Joi.object({
   phone: Joi.string().required(),
 });
 
+const contactPutSchema = Joi.object({
+  name: Joi.string(),
+  email: Joi.string(),
+  phone: Joi.string(),
+});
+
 contactsRouter.get("/", async (req, res, next) => {
   try {
     const result = await contactsService.listContacts();
@@ -28,7 +34,7 @@ contactsRouter.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await contactsService.getContactById(id);
-    console.log("id=", id);
+
     if (!result) {
       throw HttpError(404, `Contact with id=${id} not found`);
     }
@@ -54,15 +60,22 @@ contactsRouter.post("/", async (req, res, next) => {
 
 contactsRouter.put("/:id", async (req, res, next) => {
   try {
-    const { error } = contactAddSchema.validate(req.body);
+    const { error } = contactPutSchema.validate(req.body);
     if (error) {
       throw HttpError(400, error.message);
     }
+
     const { id } = req.params;
-    const result = await contactsService.updateContact(id, req.body);
-    if (!result) {
+    const { ...data } = req.body;
+
+    const contactForUpdate = await contactsService.getContactById(id);
+    if (!contactForUpdate) {
       throw HttpError(404, `Contact with id=${id} not found`);
     }
+
+    const updateContact = { ...contactForUpdate, ...data };
+
+    const result = await contactsService.updateContact(id, updateContact);
 
     res.json(result);
   } catch (error) {
