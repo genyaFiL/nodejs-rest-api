@@ -3,12 +3,13 @@ import express from "express";
 import controller from "../../controllers/controller.js";
 
 import contactsValidation from "../../middleware/validation/validation.js";
+import { isValidId, isBodyEmpty } from "../../middleware/index.js";
 
 const contactsRouter = express.Router();
 
 contactsRouter.get("/", controller.getAll);
 
-contactsRouter.get("/:id", controller.getById);
+contactsRouter.get("/:id", isValidId, controller.getById);
 
 contactsRouter.post(
   "/",
@@ -18,10 +19,19 @@ contactsRouter.post(
 
 contactsRouter.put(
   "/:id",
-  contactsValidation.putContactsValidate,
+  isValidId,
+  contactsValidation.addContactsValidate,
   controller.updateById
 );
 
-contactsRouter.delete("/:id", controller.deleteById);
+contactsRouter.patch(
+  "/:id/favorite",
+  isValidId,
+  isBodyEmpty,
+  contactsValidation.updateFavoriteSchema,
+  controller.updateById
+);
+
+contactsRouter.delete("/:id", isValidId, controller.deleteById);
 
 export default contactsRouter;

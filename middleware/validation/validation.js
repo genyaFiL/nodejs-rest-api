@@ -4,9 +4,9 @@ import { validateBody } from "../../decorator/index.js";
 
 const addContactsValidate = validateBody(schemas.contactAddSchema);
 
-const putContactsValidate = validateBody(schemas.contactPutSchema);
+const updateFavoriteSchema = validateBody(schemas.contactUpdateFavoriteSchema);
 
 export default {
   addContactsValidate,
-  putContactsValidate,
+  updateFavoriteSchema,
 };
