@@ -1,13 +1,14 @@
 import { HttpError } from "../helpers/index.js";
 import { ctrlWrapper } from "../decorator/index.js";
 import Contact from "../models/Contact.js";
-// const users = await User.find({ name: "Tom" });
+
 const getAll = async (req, res) => {
   const { _id: owner } = req.user;
-  const { page = 1, limit = 20, favorite } = req.query;
+
+  const { page = 1, limit = 20, ...query } = req.query;
   const skip = (page - 1) * limit;
   const result = await Contact.find(
-    { owner, favorite },
+    { owner, ...query },
     "-createdAt -updatedAt",
     {
       skip,
@@ -19,7 +20,7 @@ const getAll = async (req, res) => {
 
 const getById = async (req, res) => {
   const { id } = req.params;
-  const result = await Contact.findById(id);
+  const result = await Contact.findOne({ _id: id, owner: req.user._id });
   if (!result) {
     throw HttpError(404, `Contact with id=${id} not found`);
   }
@@ -35,30 +36,39 @@ const add = async (req, res) => {
 const updateById = async (req, res) => {
   const { id } = req.params;
 
-  const result = await Contact.findByIdAndUpdate(id, req.body, {
-    new: true,
-  });
+  const result = await Contact.findOneAndUpdate(
+    { _id: id, owner: req.user._id },
+    req.body,
+    {
+      new: true,
+    }
+  );
 
   res.json(result);
 };
 const updateStatusContact = async (req, res) => {
   const { id } = req.params;
-  const result = await Contact.findByIdAndUpdate(id, req.body, {
-    new: true,
-  });
+  const result = await Contact.findOneAndUpdate(
+    { _id: id, owner: req.user._id },
+    req.body,
+    {
+      new: true,
+    }
+  );
 
   res.json(result);
 };
 const deleteById = async (req, res) => {
   const { id } = req.params;
-  const result = await Contact.findByIdAndDelete(id);
+  const result = await Contact.findOneAndDelete({
+    _id: id,
+    owner: req.user._id,
+  });
   if (!result) {
     throw HttpError(404, `Contact with id=${id} not found`);
   }
 
-  res.json({
-    message: "Contact deleted",
-  });
+  res.json(result);
 };
 
 export default {
