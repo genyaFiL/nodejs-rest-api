@@ -1,4 +1,4 @@
-import schemas from "../../schemas/schemas.js";
+import schemas from "../../schemas/contact-schemas.js";
 
 import { validateBody } from "../../decorator/index.js";
 
