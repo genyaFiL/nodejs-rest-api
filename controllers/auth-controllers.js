@@ -1,11 +1,17 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Jimp from "jimp";
+import gravatar from "gravatar";
+import fs from "fs/promises";
+import path from "path";
 
 import { HttpError } from "../helpers/index.js";
 import { ctrlWrapper } from "../decorator/index.js";
 import User from "../models/User.js";
 
 const { JWT_SECRET } = process.env;
+
+const avatarsPath = path.resolve("public", "avatars");
 
 const signup = async (req, res) => {
   const { email, password } = req.body;
@@ -16,7 +22,14 @@ const signup = async (req, res) => {
 
   const hashPassword = await bcrypt.hash(password, 10);
 
-  const newUser = await User.create({ ...req.body, password: hashPassword });
+  const avatarURL = gravatar.url(email);
+
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
+  console.log("newUser: ", newUser);
 
   res.status(201).json({
     email: newUser.email,
@@ -51,11 +64,12 @@ const signin = async (req, res) => {
   });
 };
 const getCurrent = (req, res) => {
-  const { subscription, email } = req.user;
+  const { subscription, email, avatarURL } = req.user;
 
   res.json({
     email,
     subscription,
+    avatarURL,
   });
 };
 
@@ -68,9 +82,37 @@ const signout = async (req, res) => {
   });
 };
 
+const updateAvatar = async (req, res) => {
+  const { path: oldPath, filename } = req.file;
+
+  const newPath = path.join(avatarsPath, filename);
+
+  Jimp.read(oldPath, (err, img) => {
+    if (err) throw err;
+    img.resize(250, 250).write(newPath);
+  });
+
+  await fs.rename(oldPath, newPath);
+
+  const avatarURL = path.join("avatars", filename);
+
+  const { _id: owner } = req.user;
+
+  const result = await User.findOneAndUpdate(
+    owner,
+    { avatarURL },
+    {
+      new: true,
+    }
+  );
+
+  res.json(result);
+};
+
 export default {
   signup: ctrlWrapper(signup),
   signin: ctrlWrapper(signin),
   getCurrent: ctrlWrapper(getCurrent),
   signout: ctrlWrapper(signout),
+  updateAvatar: ctrlWrapper(updateAvatar),
 };
