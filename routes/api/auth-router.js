@@ -13,6 +13,14 @@ authRouter.post(
   authControllers.signup
 );
 
+authRouter.get("/verify/:verificationToken", authControllers.verify);
+
+authRouter.post(
+  "/verify",
+  usersValidations.userEmailValidate,
+  authControllers.resendVerifyEmail
+);
+
 authRouter.post(
   "/signin",
   usersValidations.userSigninValidate,
@@ -25,13 +33,10 @@ authRouter.post("/signout", authenticate, authControllers.signout);
 
 authRouter.patch(
   "/avatars",
-  // isValidId,
-  // isBodyEmpty,
+
   authenticate,
   upload.single("file"),
   authControllers.updateAvatar
-  // contactsValidation.updateFavoriteSchema,
-  // controller.updateById
 );
 
 export default authRouter;

@@ -40,10 +40,6 @@ const add = async (req, res) => {
 
   const avatars = path.join("posters", filename);
 
-  console.log("req.user: ", req.user);
-  console.log("req.body", req.body);
-  console.log("req.file", req.file);
-
   const result = await Contact.create({
     ...req.body,
     avatars,

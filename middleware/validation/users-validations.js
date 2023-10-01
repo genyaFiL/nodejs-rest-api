@@ -6,7 +6,10 @@ const userSignupValidate = validateBody(schemas.userSignupSchema);
 
 const userSigninValidate = validateBody(schemas.userSigninSchema);
 
+const userEmailValidate = validateBody(schemas.userEmailSchema);
+
 export default {
   userSignupValidate,
   userSigninValidate,
+  userEmailValidate,
 };
